@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d1117" />
+  <title>Molecule Builder 3D</title>
+  <script type="module" crossorigin src="./assets/index-1_XetkM_.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-xZu0EDSc.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <div class="brand-wrap">
+        <div class="brand">Molecule Builder <span>3D</span></div>
+        <span class="credit">Made by Nguyen Thien Quan. Warning: All right reserved @2026</span>
+      </div>
+      <div class="toolbar">
+        <button id="btn-undo" title="Ctrl+Z" data-i18n="btn.undo">Undo</button>
+        <button id="btn-delete" title="Del" data-i18n="btn.delete" disabled>Delete</button>
+        <button id="btn-duplicate" title="Ctrl+D" data-i18n="btn.duplicate">Duplicate</button>
+        <button id="btn-clear" data-i18n="btn.clear">Clear all</button>
+        <button id="btn-fc" class="toggle" data-i18n="btn.fc" data-i18n-title="btn.fc.title">Formal charges</button>
+        <button id="btn-menu" class="menu-toggle" aria-expanded="false" aria-controls="menu-dropdown">&#9776;</button>
+        <div id="menu-dropdown" class="menu-dropdown" hidden>
+          <button id="btn-tutorial" data-i18n="btn.tutorial">Tutorial</button>
+          <button id="btn-mayhem" class="toggle" data-i18n="btn.mayhem" data-i18n-title="btn.mayhem.title">Mayhem</button>
+          <button id="btn-import" data-i18n="btn.import" data-i18n-title="btn.import.title">Import</button>
+          <input type="file" id="import-file" accept=".json" hidden />
+          <button id="btn-quality" data-i18n-title="btn.quality.title">Quality: Auto</button>
+          <button id="btn-theme" data-i18n-title="btn.theme.title">Theme: Dark</button>
+          <button id="btn-lang" data-i18n-title="btn.lang.title">EN</button>
+        </div>
+      </div>
+    </header>
+
+    <aside id="left" class="msheet">
+      <section class="panel grow">
+        <h2 data-i18n="pool.title">Element pool</h2>
+        <div id="pool-tools">
+          <input id="pool-search" type="search" data-i18n-ph="pool.searchPh" placeholder="Search 118 elements..." autocomplete="off" spellcheck="false" />
+          <button id="pool-view" data-i18n="pool.viewTable" data-i18n-title="pool.view.title">Table</button>
+        </div>
+        <p class="panel-hint" data-i18n="pool.hint">Click an element to place an atom. Metals bond ionically (electron transfer). Noble gases are inert &mdash; Kr, Xe and Rn react only with F or O.</p>
+        <div id="pool-list"></div>
+        <div id="ptable" hidden></div>
+        <div id="legend"></div>
+      </section>
+    </aside>
+
+    <main id="scene-wrap">
+      <div id="hint" data-i18n-html="hint.html">
+        Click an element in the pool to place your first atom.<br />
+        Drag atoms together to bond them &mdash; green ghost means a legal bond, red means forbidden.<br />
+        Click a bond to cycle its order (1&rlm;&rarr;2&rlm;&rarr;3&rlm;&rarr;2&rlm;&rarr;1&rlm;&rarr;delete).<br />
+        Double-click two or more molecules to set up a reaction, then pick a condition.<br />
+        Move around with WASD / arrow keys (Q/E = down/up) or the touch joystick.
+      </div>
+      <div id="fps-chip"></div>
+      <div id="rxn-panel" style="display:none">
+        <div id="rxn-title"><span data-i18n="rxn.title">Reaction</span> &middot; <span id="rxn-count"></span></div>
+        <div id="rxn-conds"></div>
+        <button id="rxn-cancel" class="linklike" data-i18n="rxn.cancel">Cancel</button>
+      </div>
+      <div id="joy" aria-hidden="true">
+        <div id="joy-stick"><div id="joy-knob"></div></div>
+        <div id="joy-vert">
+          <button id="joy-up" aria-label="Move camera up">&#9650;</button>
+          <button id="joy-down" aria-label="Move camera down">&#9660;</button>
+        </div>
+      </div>
+      <div id="toast"></div>
+    </main>
+
+    <aside id="right">
+      <div id="tab-info" class="msheet">
+        <section class="panel">
+          <h2 data-i18n="sel.title">Selection</h2>
+          <div id="sel-info" class="muted" data-i18n="sel.empty">Click an atom to inspect it.</div>
+        </section>
+
+        <section class="panel">
+          <h2 data-i18n="mol.title">Molecule</h2>
+          <div id="mol-info" class="muted" data-i18n="mol.empty">Build a molecule to analyze it.</div>
+          <div id="mol-warn"></div>
+          <div id="charge-row">
+            <span class="lbl" data-i18n="mol.chargeLbl">Ion charge</span>
+            <div class="charge-btns">
+              <button id="chg-minus" data-i18n-title="chg.minus.title" title="Set ion charge one unit lower">&minus;1</button>
+              <button id="chg-auto" data-i18n-title="chg.auto.title" title="Automatic: minimize total formal charge">auto</button>
+              <button id="chg-plus" data-i18n-title="chg.plus.title" title="Set ion charge one unit higher">+1</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2 data-i18n="list.title">Molecules in scene</h2>
+          <div id="mol-list" class="muted" data-i18n="list.empty">No molecules yet.</div>
+        </section>
+      </div>
+
+      <div id="tab-dex" class="msheet">
+        <section class="panel">
+          <h2><span data-i18n="dex.disc">Discoveries</span> <span id="disc-count" class="muted"></span></h2>
+          <div id="disc-list" class="muted" data-i18n="dex.discEmpty">Nothing discovered yet.</div>
+          <button id="btn-save-disc" class="linklike" disabled data-i18n="btn.saveDisc">Save discoveries</button>
+        </section>
+
+        <section class="panel">
+          <h2><span data-i18n="dex.chal">Challenges</span> <span id="ch-progress" class="muted"></span></h2>
+          <div id="ch-list"></div>
+          <button id="ch-reset" class="linklike" data-i18n="btn.reset">Reset progress</button>
+        </section>
+      </div>
+    </aside>
+
+    <footer id="status-bar">
+      <span id="status-text" class="info"></span>
+      <span id="keys-hint" data-i18n="keys.hint">WASD/arrows = move camera &middot; drag = move / bond &middot; click bond = raise order &middot; Shift+click = lower &middot; double-click molecule = select for reaction &middot; Del = remove &middot; Ctrl+Z = undo</span>
+    </footer>
+
+    <nav id="mtabs" aria-label="Panels">
+      <button data-tab="left" data-i18n="tab.pool">Pool</button>
+      <button data-tab="tab-info" data-i18n="tab.info">Info</button>
+      <button data-tab="tab-dex" data-i18n="tab.dex">Dex</button>
+    </nav>
+  </div>
+
+  <div id="rxn-overlay" class="rxn-overlay" aria-hidden="true">
+    <div class="rxn-condition"></div>
+    <div class="rxn-equation"></div>
+  </div>
+
+</body>
+</html>
